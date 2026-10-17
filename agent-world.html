@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#0b1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Agent World">
+<meta name="description" content="Multi-agent scientific research console. Only working together can problems be sorted.">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<title>Agent World — Multi-AI Agent Workspace</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#17223a;--line:#293650;--text:#eef3ff;--muted:#9ba9c4;--cyan:#64e6e0;--blue:#829cff;--green:#69e6a6;--amber:#ffca7a;--red:#ff8b9a;--purple:#b794f6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#172748 0,transparent 40%),var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#1c2944;color:var(--text);border-radius:10px;padding:10px 13px}button:hover{border-color:var(--cyan)}button.primary{background:linear-gradient(120deg,#4edbd5,#8b9cff);color:#081323;border:0;font-weight:750}button.ghost{background:transparent}button.danger{border-color:#5a3040;color:var(--red)}button:disabled{opacity:.5;cursor:not-allowed}input,select,textarea{width:100%;background:#0b1325;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--cyan)}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}
+.shell{max-width:1680px;margin:auto;padding:18px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--cyan),var(--blue));display:grid;place-items:center;color:#081323;font-size:22px;font-weight:900;line-height:1;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover;display:block}
+.brand h1{font-size:20px;margin:0;letter-spacing:.2px}.brand p{margin:2px 0 0;color:var(--muted);font-size:11px}
+.status{border:1px solid #2b6655;color:var(--green);padding:6px 11px;border-radius:99px;font-size:12px;white-space:nowrap}
+.hero{padding:18px 22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(115deg,rgba(31,54,87,.85),rgba(18,26,45,.9));margin-bottom:14px}
+.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:2px;font-weight:800;text-transform:uppercase}
+.hero h2{font-size:clamp(20px,3.2vw,30px);line-height:1.15;margin:6px 0 6px;max-width:920px}
+.hero p{color:#bac7df;max-width:920px;margin:0;font-size:13px}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr) 300px;gap:12px;align-items:start}
+.panel{background:rgba(18,26,45,.95);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0}
+.panel-head{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.panel-head h3{margin:0;font-size:13px}
+.panel-body{padding:12px}
+.muted{color:var(--muted)}.tiny{font-size:11px}
+.field{margin:0 0 10px}.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}.tab{font-size:10px;padding:5px 8px}.tab.active{border-color:var(--cyan);background:#193640;color:var(--cyan)}
+.agent-list{display:grid;gap:6px;margin-top:8px;max-height:380px;overflow:auto}
+.agent{display:flex;gap:8px;align-items:center;text-align:left;width:100%;background:#0d1527;padding:9px;border:1px solid var(--line);position:relative}
+.agent.active{border-color:var(--cyan);background:#142b39}
+.agent.multi-selected{border-color:var(--green);background:#0f2a22}
+.agent .avatar{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#253451;font-weight:800;flex-shrink:0;font-size:12px}
+.agent .meta{min-width:0;flex:1}.agent strong{display:block;font-size:12px}.agent small{display:block;color:var(--muted);font-size:10px;line-height:1.25}
+.agent .check{width:16px;height:16px;border:1px solid var(--line);border-radius:4px;flex-shrink:0;display:grid;place-items:center;font-size:10px;color:transparent}
+.agent.multi-selected .check{background:var(--green);border-color:var(--green);color:#081323}
+.agent .agent-gear{font-size:13px;opacity:.45;padding:2px 4px;border-radius:6px;flex-shrink:0}
+.agent .agent-gear:hover{opacity:1;background:#1c2944;color:var(--cyan)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px}
+.mode-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.mode-btn{font-size:11px;padding:7px 10px}.mode-btn.active{border-color:var(--cyan);background:#193640;color:var(--cyan)}
+.mode-btn.multi.active{border-color:var(--green);background:#0f2a22;color:var(--green)}
+.chat{display:flex;flex-direction:column;min-height:600px}
+.chat-head{display:flex;align-items:center;gap:10px;min-width:0}
+.chat-head .avatar{width:34px;height:34px;border-radius:10px;background:#243752;display:grid;place-items:center;font-weight:800}
+.chat-head h3{margin:0;font-size:13px}.chat-head p{margin:2px 0 0;color:var(--muted);font-size:11px}
+.chat-actions{display:flex;gap:5px;flex-wrap:wrap}
+.messages{padding:14px;display:flex;flex-direction:column;gap:11px;flex:1;max-height:480px;overflow:auto}
+.msg{max-width:94%;padding:10px 12px;border-radius:11px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+.msg.assistant{align-self:flex-start;background:#1a2943;border:1px solid #2b3b59}
+.msg.user{align-self:flex-end;background:#183b45;border:1px solid #28666a}
+.msg.system{align-self:center;background:#1a2235;border:1px dashed #3a4a68;color:var(--muted);font-size:12px;max-width:98%}
+.msg.synth{align-self:stretch;max-width:100%;background:linear-gradient(135deg,#1a2a3a,#1e2438);border:1px solid #3d5a80}
+.msg .by{display:block;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.msg p{margin:0}
+.welcome{color:var(--muted);text-align:center;margin:auto;max-width:500px;padding:20px}
+.welcome .orb{font-size:34px;margin-bottom:8px}
+.composer{padding:12px;border-top:1px solid var(--line)}
+.composer textarea{min-height:68px;max-height:150px;resize:vertical}
+.compose-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.compose-row .muted{font-size:11px}
+.right-stack{display:grid;gap:12px}
+.directory-item{padding:9px 0;border-bottom:1px solid var(--line)}.directory-item:last-child{border:0}
+.directory-item strong{font-size:12px;display:block}.directory-item p{margin:2px 0 5px;color:var(--muted);font-size:10px}
+.pill{font-size:9px;border:1px solid var(--line);border-radius:99px;padding:2px 6px;color:var(--muted)}
+.pill.sci{border-color:#3d5a40;color:var(--green)}.pill.tool{border-color:#4a3d5a;color:var(--purple)}
+.callout{border:1px solid #66552e;background:#282318;color:#f4d59d;padding:9px;border-radius:9px;font-size:11px;margin-top:8px}
+.callout strong{display:block;margin-bottom:3px}
+.callout.info{border-color:#2b4a66;background:#182838;color:#a8c8e8}
+.callout.ok{border-color:#2b6655;background:#0f2a22;color:#a8e0c0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{background:#111b30;border:1px solid var(--line);border-radius:11px;padding:10px}.stat strong{display:block;font-size:18px}.stat span{font-size:10px;color:var(--muted)}
+.overlay{display:none;position:fixed;inset:0;background:#050914cc;z-index:10;padding:16px;overflow:auto}
+.overlay.show{display:grid;place-items:center}
+.modal{width:min(660px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.modal h2{margin:0 0 4px}.modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#e9f8ff;color:#081323;padding:10px 14px;border-radius:10px;font-size:13px;display:none;z-index:20}
+.foot{color:var(--muted);font-size:11px;text-align:center;padding:16px 0}
+.toolrow{display:flex;gap:5px;flex-wrap:wrap}.toolrow button{font-size:10px;padding:5px 8px}
+.workflow-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.wf-btn{font-size:10px;padding:7px;text-align:left;background:#0d1527}
+.wf-btn:hover{border-color:var(--cyan)}.wf-btn.active{border-color:var(--cyan);background:#193640;color:var(--cyan)}
+.evidence-item{padding:7px 0;border-bottom:1px solid var(--line);font-size:11px}
+.evidence-item:last-child{border:0}
+.evidence-item .tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:99px;margin-right:4px;border:1px solid var(--line)}
+.tag.claim{color:var(--amber);border-color:#66552e}.tag.evidence{color:var(--green);border-color:#2b6655}.tag.limit{color:var(--red);border-color:#5a3040}.tag.source{color:var(--blue);border-color:#2b4a66}.tag.open{color:var(--purple);border-color:#4a3d5a}
+.role-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:3px 7px;border-radius:99px;border:1px solid var(--line);margin:2px;cursor:pointer;background:#0d1527}
+.role-chip:hover,.role-chip.active{border-color:var(--purple);color:var(--purple)}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;width:100%;margin:4px 0}
+.compare-card{background:#121c30;border:1px solid var(--line);border-radius:12px;padding:11px;min-height:80px}
+.compare-card .card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.compare-card .card-head .av{width:26px;height:26px;border-radius:8px;background:#253451;display:grid;place-items:center;font-size:11px;font-weight:800}
+.compare-card .card-head strong{font-size:12px}
+.compare-card .card-body{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:320px;overflow:auto;color:#d0d8ec}
+.compare-card.loading .card-body{color:var(--muted);font-style:italic}
+.compare-card.error{border-color:#5a3040}
+.compare-card.error .card-body{color:var(--red)}
+.compare-card .card-actions{margin-top:8px;padding-top:7px;border-top:1px solid var(--line)}
+.compare-card .save-finding-btn{font-size:10px;padding:5px 8px;width:100%;background:#0f2a22;border-color:#2b6655;color:var(--green)}
+.compare-card .save-finding-btn:hover{border-color:var(--green)}
+.synth-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;padding:10px;background:#0d1527;border-radius:10px;border:1px solid var(--line)}
+.synth-bar select{width:auto;min-width:140px;padding:7px 10px;font-size:12px}
+@media(max-width:1200px){.layout{grid-template-columns:240px minmax(0,1fr)}.right-stack{grid-column:1/-1;grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.shell{padding:10px}.layout{grid-template-columns:1fr}.left-panel{order:1}.chat-panel{order:2}.right-stack{order:3;grid-template-columns:1fr}.chat{min-height:480px}.messages{max-height:340px}.stats{grid-template-columns:1fr 1fr}.compare-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+ <div class="brand"><div class="logo"><img src="icons/apple-touch-icon.png" alt="Agent World"></div><div><h1>AGENT WORLD</h1><p>Multi-AI agent workspace</p></div></div>
+ <div class="status" id="statusBadge">● Multi-agent ready</div>
+</header>
+
+<section class="hero">
+ <div class="eyebrow">Multi-AI agent workspace</div>
+ <h2>Put a problem in. Agents work it. Findings get saved.</h2>
+ <p>Select the agents you want → they each attempt the problem independently → compare answers side-by-side → save useful findings → synthesize a stronger solution. Everything persists on this device.</p>
+</section>
+
+<div class="stats">
+ <div class="stat"><strong id="agentCount">0</strong><span>Agents available</span></div>
+ <div class="stat"><strong id="connectedCount">0</strong><span>Ready endpoints</span></div>
+ <div class="stat"><strong id="queryCount">0</strong><span>Problems tackled</span></div>
+ <div class="stat"><strong id="evidenceCount">0</strong><span>Saved findings</span></div>
+</div>
+
+<div class="layout">
+ <!-- LEFT -->
+ <aside class="panel left-panel">
+  <div class="panel-head"><h3>Your agents</h3><button id="addAgentBtn" class="ghost" title="Add custom endpoint">＋ Add</button></div>
+  <div class="panel-body">
+   <div class="mode-bar">
+    <button type="button" class="mode-btn" id="modeSingle">Single</button>
+    <button type="button" class="mode-btn multi active" id="modeMulti">Multi-agent</button>
+   </div>
+   <input id="agentSearch" placeholder="Search agents, tools…" aria-label="Search agents">
+   <div class="tabs" style="margin-top:8px">
+    <button class="tab active" data-filter="all">All</button>
+    <button class="tab" data-filter="configured">Endpoints</button>
+    <button class="tab" data-filter="directory">AI</button>
+    <button class="tab" data-filter="science">Science</button>
+    <button class="tab" data-filter="role">Roles</button>
+   </div>
+   <p class="tiny muted" id="multiHint" style="margin:8px 0 0;display:none">Click agents to select (green ✓). They will each work on your problem in parallel and you can save their findings.</p>
+   <div id="agentList" class="agent-list"></div>
+   <div class="callout ok" id="setupCallout"><strong>Setup (one time)</strong><br>1. Get a free key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a><br>2. Tap ⚙ on any free agent and paste the key.<br>3. Select agents (green ✓) and send a problem — they work in parallel, then you can synthesize.</div>
+  </div>
+ </aside>
+
+ <!-- CENTER -->
+ <main class="panel chat-panel">
+  <div class="panel-head">
+   <div class="chat-head">
+    <div class="avatar" id="activeAvatar">🧠</div>
+    <div><h3 id="activeName">Research Desk</h3><p id="activeDesc">Select agents or switch to Multi-agent mode</p></div>
+   </div>
+   <div class="chat-actions">
+    <button id="configureBtn" class="ghost">⚙ Connect</button>
+    <button id="clearBtn" class="ghost">Clear</button>
+   </div>
+  </div>
+  <div id="messages" class="messages">
+   <div class="welcome">
+    <div class="orb">🧠</div>
+    <strong>Multi-AI Agent Workspace</strong>
+    <p>1. Switch to <b>Multi-agent</b> and select the agents you want (green checks).<br>
+    2. Type a problem below and send — each selected agent works on it independently.<br>
+    3. Compare answers, then save useful findings into the Evidence log on the right.<br>
+    4. Optionally synthesize the best resolution from their work.</p>
+    <div class="toolrow" style="justify-content:center;margin-top:12px">
+     <button onclick="suggest('Formulate a testable hypothesis and list minimal evidence that would support or refute it: ')">Hypothesis</button>
+     <button onclick="suggest('Appraise strength of evidence, methods risks, and alternative explanations for: ')">Appraise</button>
+     <button onclick="suggest('What is the best current approach to solve this problem, with uncertainties: ')">Solve</button>
+    </div>
+   </div>
+  </div>
+  <form id="chatForm" class="composer">
+   <div style="margin-bottom:6px">
+    <label class="tiny muted">Scientific roles (stacked onto every query)</label>
+    <div id="roleChips" style="margin-top:3px"></div>
+   </div>
+   <textarea id="prompt" placeholder="Describe the problem you want the agents to solve…" required></textarea>
+   <div class="compose-row">
+    <span class="muted" id="modeHint">Single mode · select an endpoint</span>
+    <div class="toolrow">
+     <button class="primary" type="submit" id="sendBtn">Send question ↗</button>
+    </div>
+   </div>
+  </form>
+ </main>
+
+ <!-- RIGHT -->
+ <aside class="right-stack">
+  <section class="panel">
+   <div class="panel-head"><h3>Scientific workflows</h3><span class="pill sci">Standards</span></div>
+   <div class="panel-body">
+    <div class="workflow-grid" id="workflowGrid">
+     <button type="button" class="wf-btn active" data-wf="direct">Direct</button>
+     <button type="button" class="wf-btn" data-wf="hypothesis">Hypothesis</button>
+     <button type="button" class="wf-btn" data-wf="lit">Literature plan</button>
+     <button type="button" class="wf-btn" data-wf="appraise">Appraisal</button>
+     <button type="button" class="wf-btn" data-wf="methods">Methods</button>
+     <button type="button" class="wf-btn" data-wf="compare">Independent review</button>
+     <button type="button" class="wf-btn" data-wf="extract">Extract</button>
+     <button type="button" class="wf-btn" data-wf="uncertainty">Uncertainty</button>
+    </div>
+    <p class="tiny muted" id="wfDesc">Sends your question as written.</p>
+   </div>
+  </section>
+
+  <section class="panel">
+   <div class="panel-head"><h3>Agent findings</h3><span class="pill" id="evPill">0</span></div>
+   <div class="panel-body">
+    <p class="tiny muted" style="margin:0 0 8px">Place for agents (and you) to park claims, data, risks and open questions while solving a problem. Survives reloads.</p>
+    <div class="field"><label>Finding from an agent / your note</label>
+     <textarea id="evidenceNote" rows="2" placeholder="e.g. Nemotron: X is limited by Y… or Claim: …"></textarea>
+    </div>
+    <div class="field"><label>Type</label>
+     <select id="evidenceType">
+      <option value="claim">Claim</option>
+      <option value="evidence">Evidence / data</option>
+      <option value="limit">Limitation / risk</option>
+      <option value="source">Source</option>
+      <option value="open">Open question</option>
+     </select>
+    </div>
+    <div class="toolrow"><button id="saveEvidenceBtn">Save finding</button><button id="exportBtn">Export all</button></div>
+    <div id="evidenceList" style="margin-top:8px;max-height:150px;overflow:auto"></div>
+    <p class="tiny muted" id="noteStatus">Auto-saved on this device. Export for backup.</p>
+   </div>
+  </section>
+
+  <section class="panel">
+   <div class="panel-head"><h3>Public directory</h3><span class="pill">External</span></div>
+   <div class="panel-body" id="directory" style="max-height:280px;overflow:auto"></div>
+  </section>
+ </aside>
+</div>
+
+<div class="foot">Agent World is user-controlled. Work, evidence, and endpoints auto-save on this device. Multi-agent mode only queries endpoints you configure and authorize.</div>
+</div>
+
+<!-- Config modal -->
+<div class="overlay" id="configOverlay" role="dialog" aria-modal="true">
+ <div class="modal">
+  <div class="modal-top">
+   <div><h2>Agent settings</h2><div class="muted tiny">Each agent keeps its own URL, model and API key. Changes are saved automatically.</div></div>
+   <button id="closeConfig" class="ghost">✕</button>
+  </div>
+  <form id="configForm">
+   <div class="field"><label>Display name</label><input id="cfgName" required placeholder="Free Router / Local Llama"></div>
+   <div class="field"><label>API endpoint URL</label><input id="cfgUrl" type="url" required placeholder="https://openrouter.ai/api/v1/chat/completions"></div>
+   <div class="field"><label>Model name</label><input id="cfgModel" required placeholder="openrouter/free or llama3.2"></div>
+   <div class="field"><label>API key (session only)</label><input id="cfgKey" type="password" autocomplete="off" placeholder="Optional for local Ollama / Required for OpenRouter"></div>
+   <div class="field"><label>Request format</label>
+    <select id="cfgFormat">
+     <option value="openai">OpenAI-compatible</option>
+     <option value="ollama">Ollama /api/chat</option>
+     <option value="anthropic">Anthropic messages</option>
+    </select>
+   </div>
+   <div class="modal-actions"><button type="button" id="cancelConfig">Cancel</button><button type="submit" class="primary">Save endpoint</button></div>
+  </form>
+ </div>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+(function(){
+const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Every free endpoint ships with its own complete settings already filled in.
+// All of these are added automatically on first load (and merged on later loads).
+const freeEndpoints = [
+  {id:'free-router', name:'OpenRouter Free', desc:'Auto-routes to any free model', icon:'🧠', kind:'endpoint', url:OR_URL, model:'openrouter/free', format:'openai', tags:['endpoint']},
+  {id:'nemotron-ultra', name:'Nemotron 3 Ultra', desc:'NVIDIA · deep reasoning · 1M ctx', icon:'N', kind:'endpoint', url:OR_URL, model:'nvidia/nemotron-3-ultra-550b-a55b:free', format:'openai', tags:['endpoint']},
+  {id:'nemotron-super', name:'Nemotron 3 Super', desc:'NVIDIA · general + agents · 262K', icon:'Ns', kind:'endpoint', url:OR_URL, model:'nvidia/nemotron-3-super-120b-a12b:free', format:'openai', tags:['endpoint']},
+  {id:'nemotron-lightning', name:'Nemotron 3.5 Lightning', desc:'NVIDIA · fast high-volume · 1M', icon:'⚡', kind:'endpoint', url:OR_URL, model:'nvidia/nemotron-3.5-lightning:free', format:'openai', tags:['endpoint']},
+  {id:'gemma-31b', name:'Gemma 4 31B', desc:'Google · multimodal · 262K', icon:'G', kind:'endpoint', url:OR_URL, model:'google/gemma-4-31b-it:free', format:'openai', tags:['endpoint']},
+  {id:'inkling', name:'Inkling', desc:'Thinking Machines · long context', icon:'I', kind:'endpoint', url:OR_URL, model:'thinkingmachines/inkling:free', format:'openai', tags:['endpoint']},
+  {id:'north-code', name:'North Mini Code', desc:'Cohere · coding & agents', icon:'C', kind:'endpoint', url:OR_URL, model:'cohere/north-mini-code:free', format:'openai', tags:['endpoint']},
+  {id:'qwen-27b', name:'Qwen3.8 27B', desc:'Qwen · research + vision (free)', icon:'Q', kind:'endpoint', url:OR_URL, model:'qwen/qwen3.8-27b:free', format:'openai', tags:['endpoint']},
+  {id:'qwen-max', name:'Qwen3.8 Max', desc:'Qwen · flagship · 1M ctx (paid)', icon:'Qm', kind:'endpoint', url:OR_URL, model:'qwen/qwen3.8-max', format:'openai', tags:['endpoint']},
+  {id:'ollama-local', name:'Ollama Local', desc:'Local models · no key needed', icon:'🦙', kind:'endpoint', url:'http://localhost:11434/v1/chat/completions', model:'llama3.2', format:'openai', tags:['endpoint']}
+];
+
+
+const directoryAndRoles = [
+  {id:'chatgpt',name:'ChatGPT',desc:'OpenAI · general reasoning',icon:'O',kind:'directory',url:'https://chatgpt.com/',tags:['ai']},
+  {id:'claude',name:'Claude',desc:'Anthropic · long-context analysis',icon:'C',kind:'directory',url:'https://claude.ai/',tags:['ai']},
+  {id:'gemini',name:'Gemini',desc:'Google · multimodal research',icon:'G',kind:'directory',url:'https://gemini.google.com/',tags:['ai']},
+  {id:'openrouter',name:'OpenRouter',desc:'Unified multi-model API',icon:'R',kind:'directory',url:'https://openrouter.ai/',tags:['ai']},
+  {id:'arxiv',name:'arXiv',desc:'Preprints · physics, CS, q-bio…',icon:'α',kind:'directory',url:'https://arxiv.org/',tags:['science']},
+  {id:'semantic',name:'Semantic Scholar',desc:'AI academic search',icon:'S',kind:'directory',url:'https://www.semanticscholar.org/',tags:['science']},
+  {id:'pubmed',name:'PubMed',desc:'Biomedical literature',icon:'Pm',kind:'directory',url:'https://pubmed.ncbi.nlm.nih.gov/',tags:['science']},
+  // Roles (each has its own system setting)
+  {id:'role-methodologist',name:'Methodologist',desc:'Design, bias, power, validity',icon:'Mθ',kind:'role',tags:['role'],
+   system:'You are a rigorous research methodologist. Focus on study design, sampling, measurement validity, confounding, and statistical power.'},
+  {id:'role-skeptic',name:'Skeptic',desc:'Strongest counterarguments',icon:'Sk',kind:'role',tags:['role'],
+   system:'You are a scientific skeptic. Give the strongest plausible counterarguments, alternative explanations, and failure modes.'},
+  {id:'role-synthesizer',name:'Evidence synthesizer',desc:'Weigh findings & confidence',icon:'Σ',kind:'role',tags:['role'],
+   system:'Synthesize evidence. State consistency vs heterogeneity, and overall confidence with reasons.'},
+  {id:'role-hypothesis',name:'Hypothesis engineer',desc:'Falsifiable claims & tests',icon:'H₀',kind:'role',tags:['role'],
+   system:'Formulate precise, falsifiable hypotheses with predictions and supporting/refuting criteria.'}
+];
+
+const workflowDesc = {
+  direct:'Sends your question as written.',
+  hypothesis:'Falsifiable hypothesis, predictions, support/refute criteria, competing explanations.',
+  lit:'Literature search strategy: databases, keywords, inclusion/exclusion, quality filters.',
+  appraise:'Claim strength, methods risks, alternative explanations, residual uncertainty.',
+  methods:'Design critique, bias sources, measurement, analysis plan, reproducibility gaps.',
+  compare:'Strongest answer, counterarguments, evidence needed, confidence bounds.',
+  extract:'Structured claims, numbers, methods notes, open questions.',
+  uncertainty:'Knowns, uncertainty sources, sensitivity to assumptions, decisive next result.'
+};
+
+const workflowPrefix = {
+  direct:'',
+  hypothesis:'Respond as a careful scientist. Formulate or refine a testable hypothesis. List: (1) precise claim, (2) observable prediction, (3) minimal supporting evidence, (4) minimal refuting evidence, (5) key assumptions, (6) competing hypotheses.\n\nUser question:\n',
+  lit:'Produce a practical literature search and appraisal plan. Include target databases, keyword strategy, inclusion/exclusion criteria, and quality filters.\n\nTopic:\n',
+  appraise:'Appraise the following. Separate verified points, assumptions, and speculation. Discuss methods risks and alternative explanations.\n\nMaterial:\n',
+  methods:'Provide a methods critique: research question clarity, design appropriateness, sampling/selection bias, measurement, and confounding.\n\nMaterial:\n',
+  compare:'Review independently. Give: (A) strongest substantiated answer, (B) strongest counterarguments, (C) evidence still needed, (D) confidence and key limitations.\n\nQuestion:\n',
+  extract:'Extract structured information. Prefer sections or JSON: claims, quantitative results, methods notes, stated limitations, open questions.\n\nInput:\n',
+  uncertainty:'Focus on uncertainty. State: what is known with reasonable confidence, main uncertainty sources, and sensitivity of conclusions.\n\nQuestion:\n'
+};
+
+// All free endpoints + directory + roles are added automatically
+const defaultAgents = [
+  ...freeEndpoints,
+  ...directoryAndRoles
+];
+
+const STORAGE_KEY = 'agentWorld_v1';
+
+let agents = [...defaultAgents];
+let active = 'free-router';
+let filter = 'all';
+let queries = 0;
+let sessionMessages = [];
+let evidence = [];
+let secrets = {};
+let activeRoles = new Set();
+let currentWorkflow = 'direct';
+let multiMode = true;
+// Pre-select the strongest free agents for multi-agent mode
+let multiSelected = new Set(['free-router','nemotron-ultra','nemotron-super','gemma-31b','inkling']);
+let lastMultiResults = [];
+
+function saveState(){
+  try{
+    const payload = {
+      agents: agents.filter(a => a.kind === 'endpoint'), // only persist configured endpoints
+      secrets,
+      evidence,
+      sessionMessages,
+      active,
+      activeRoles: [...activeRoles],
+      currentWorkflow,
+      multiMode,
+      multiSelected: [...multiSelected],
+      queries,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }catch(e){ console.warn('Save failed', e); }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    // Always start from the full current default list, then overlay any user-customized endpoints
+    const endpointMap = new Map();
+    // 1. Built-in free endpoints (always present, each with its own settings)
+    freeEndpoints.forEach(a => endpointMap.set(a.id, {...a}));
+    // 2. User-saved / customized endpoints (override or add)
+    (data.agents || []).filter(a => a.kind === 'endpoint').forEach(a => {
+      endpointMap.set(a.id, {...a, kind:'endpoint'});
+    });
+    const nonEndpoints = defaultAgents.filter(a => a.kind !== 'endpoint');
+    agents = [...endpointMap.values(), ...nonEndpoints];
+    if(data.secrets) secrets = data.secrets;
+    if(Array.isArray(data.evidence)) evidence = data.evidence;
+    if(Array.isArray(data.sessionMessages)) sessionMessages = data.sessionMessages;
+    if(data.active && agents.some(a=>a.id===data.active)) active = data.active;
+    if(Array.isArray(data.activeRoles)) activeRoles = new Set(data.activeRoles);
+    if(data.currentWorkflow) currentWorkflow = data.currentWorkflow;
+    if(typeof data.multiMode === 'boolean') multiMode = data.multiMode;
+    if(Array.isArray(data.multiSelected)) {
+      // Keep only still-existing endpoint ids
+      multiSelected = new Set(data.multiSelected.filter(id => agents.some(a=>a.id===id && a.kind==='endpoint')));
+      if(multiSelected.size === 0) multiSelected = new Set(['free-router','nemotron-ultra','nemotron-super']);
+    }
+    if(typeof data.queries === 'number') queries = data.queries;
+    return true;
+  }catch(e){ console.warn('Load failed', e); return false; }
+}
+
+function restoreMessagesUI(){
+  const box = $('messages');
+  if(!sessionMessages.length) return;
+  box.innerHTML = '';
+  sessionMessages.forEach(m => {
+    const d = document.createElement('div');
+    d.className = 'msg ' + (m.role === 'user' ? 'user' : m.role === 'synth' || m.role === 'synthesis' ? 'synth' : m.role === 'system' || m.role === 'multi' ? 'system' : 'assistant');
+    const by = m.by || (m.role === 'user' ? 'You' : 'Agent');
+    d.innerHTML = `<span class="by">${esc(by)}</span><p>${esc(m.text || '')}</p>`;
+    box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+}
+
+const $ = id => document.getElementById(id);
+function toast(s){ $('toast').textContent=s; $('toast').style.display='block'; setTimeout(()=>$('toast').style.display='none',2800); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function current(){ return agents.find(a=>a.id===active)||agents[0]; }
+
+function renderAgents(){
+  const q = $('agentSearch').value.toLowerCase();
+  let arr = agents.filter(a => (a.name+' '+a.desc+' '+(a.tags||[]).join(' ')).toLowerCase().includes(q));
+  if(filter==='configured') arr = arr.filter(a=>a.kind==='endpoint');
+  if(filter==='directory') arr = arr.filter(a=>a.kind==='directory' && !(a.tags||[]).includes('science'));
+  if(filter==='science') arr = arr.filter(a=>a.kind==='directory' && (a.tags||[]).includes('science'));
+  if(filter==='role') arr = arr.filter(a=>a.kind==='role');
+
+  $('agentList').innerHTML = arr.map(a=>{
+    let sub = 'External · open separately';
+    if(a.kind==='endpoint') sub = '<span class="dot"></span>'+esc(a.model||'');
+    if(a.kind==='role') sub = 'Scientific role · prompt injector';
+    const isMultiSel = multiMode && a.kind==='endpoint' && multiSelected.has(a.id);
+    const isActive = !multiMode && a.id===active;
+    const cls = 'agent' + (isActive?' active':'') + (isMultiSel?' multi-selected':'');
+    const check = multiMode && a.kind==='endpoint' ? `<span class="check">${isMultiSel?'✓':''}</span>` : '';
+    const gear = a.kind==='endpoint' ? `<span class="agent-gear" data-gear="${esc(a.id)}" title="Edit this agent's settings">⚙</span>` : '';
+    return `<button class="${cls}" data-id="${esc(a.id)}" data-kind="${a.kind}">
+      <span class="avatar">${esc(a.icon||'🧠')}</span>
+      <span class="meta"><strong>${esc(a.name)}</strong><small>${sub}</small></span>
+      ${gear}
+      ${check}
+    </button>`;
+  }).join('') || '<p class="muted tiny">No agents match.</p>';
+
+  $('agentList').querySelectorAll('[data-id]').forEach(b=>{
+    b.onclick = (e)=>{
+      // Ignore clicks on the gear (handled separately)
+      if(e.target.closest('[data-gear]')) return;
+      const id = b.dataset.id;
+      const kind = b.dataset.kind;
+      if(multiMode){
+        if(kind!=='endpoint'){ toast('Multi-agent only selects configured endpoints'); return; }
+        if(multiSelected.has(id)) multiSelected.delete(id);
+        else multiSelected.add(id);
+        updateModeUI();
+        renderAgents();
+        saveState();
+      } else {
+        selectAgent(id);
+      }
+    };
+  });
+  // Per-agent settings gear
+  $('agentList').querySelectorAll('[data-gear]').forEach(g=>{
+    g.onclick = (e)=>{
+      e.stopPropagation();
+      active = g.dataset.gear;
+      openConfig();
+    };
+  });
+  $('agentCount').textContent = agents.length;
+  $('connectedCount').textContent = agents.filter(a=>a.kind==='endpoint').length;
+}
+
+function selectAgent(id){
+  active = id;
+  const a = current();
+  $('activeAvatar').textContent = a.icon || '🧠';
+  $('activeName').textContent = a.name;
+  if(a.kind==='endpoint'){
+    $('activeDesc').textContent = 'Connected endpoint · '+(a.model||'');
+    $('modeHint').textContent = 'Single mode · messages go to this endpoint'+(activeRoles.size?' + roles':'');
+  } else if(a.kind==='role'){
+    $('activeDesc').textContent = 'Role · stacks instructions onto queries';
+    $('modeHint').textContent = 'Activate role chips, then select an endpoint';
+    activeRoles.add(a.id);
+    renderRoleChips();
+  } else {
+    $('activeDesc').textContent = 'Directory · opens externally';
+    $('modeHint').textContent = 'Open service externally, or configure an API endpoint';
+  }
+  renderAgents();
+  saveState();
+}
+
+function updateModeUI(){
+  if(multiMode){
+    const n = multiSelected.size;
+    $('activeAvatar').textContent = '⌘';
+    $('activeName').textContent = n ? `Multi-agent (${n})` : 'Multi-agent';
+    $('activeDesc').textContent = n ? [...multiSelected].map(id=>{
+      const a = agents.find(x=>x.id===id); return a?a.name:id;
+    }).join(' · ') : 'Select endpoints on the left (green check)';
+    $('modeHint').textContent = n ? `Will query ${n} endpoint(s) in parallel` : 'Select at least one configured endpoint';
+    $('sendBtn').textContent = n ? `Query ${n} agents ↗` : 'Select endpoints first';
+    $('multiHint').style.display = 'block';
+  } else {
+    $('multiHint').style.display = 'none';
+    $('sendBtn').textContent = 'Send question ↗';
+    selectAgent(active);
+  }
+}
+
+function renderRoleChips(){
+  const roles = agents.filter(a=>a.kind==='role');
+  $('roleChips').innerHTML = roles.map(r=>
+    `<span class="role-chip ${activeRoles.has(r.id)?'active':''}" data-role="${r.id}">${esc(r.icon)} ${esc(r.name)}</span>`
+  ).join('');
+  $('roleChips').querySelectorAll('[data-role]').forEach(el=>{
+    el.onclick = ()=>{
+      if(activeRoles.has(el.dataset.role)) activeRoles.delete(el.dataset.role);
+      else activeRoles.add(el.dataset.role);
+      renderRoleChips();
+      updateModeUI();
+      saveState();
+    };
+  });
+}
+
+function renderDirectory(){
+  const dir = agents.filter(a=>a.kind==='directory');
+  $('directory').innerHTML = dir.map(a=>{
+    const isSci = (a.tags||[]).includes('science');
+    return `<div class="directory-item">
+      <strong>${esc(a.name)} ${isSci?'<span class="pill sci">science</span>':'<span class="pill">AI</span>'}</strong>
+      <p>${esc(a.desc)}</p>
+      <a href="${esc(a.url)}" target="_blank" rel="noopener">Open ↗</a>
+    </div>`;
+  }).join('');
+}
+
+function renderEvidence(){
+  $('evidenceCount').textContent = evidence.length;
+  $('evPill').textContent = evidence.length;
+  $('evidenceList').innerHTML = evidence.slice().reverse().map(e=>
+    `<div class="evidence-item"><span class="tag ${esc(e.type)}">${esc(e.type)}</span>${esc(e.text)} <span class="muted tiny">${new Date(e.time).toLocaleTimeString()}</span></div>`
+  ).join('') || '<p class="muted tiny">No notes yet.</p>';
+}
+
+function addMsg(role, txt, by, extraHtml){
+  const box = $('messages');
+  const welcome = box.querySelector('.welcome');
+  if(welcome) welcome.remove();
+  const d = document.createElement('div');
+  d.className = 'msg '+role;
+  d.innerHTML = `<span class="by">${esc(by||(role==='user'?'You':'Agent World'))}</span><p>${esc(txt)}</p>` + (extraHtml||'');
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  sessionMessages.push({role, text:txt, by:by||role, time:new Date().toISOString()});
+  saveState();
+  return d;
+}
+
+function suggest(s){ $('prompt').value=s; $('prompt').focus(); }
+window.suggest = suggest;
+
+function buildEnrichedPrompt(userText){
+  let prefix = workflowPrefix[currentWorkflow]||'';
+  let roleBlocks = [];
+  activeRoles.forEach(rid=>{
+    const r = agents.find(a=>a.id===rid);
+    if(r&&r.system) roleBlocks.push('[Role: '+r.name+']\n'+r.system);
+  });
+  const roleHeader = roleBlocks.length
+    ? 'Apply the following specialist scientific roles while answering:\n\n'+roleBlocks.join('\n\n')+'\n\n---\n\n'
+    : '';
+  return roleHeader + prefix + userText;
+}
+
+async function callEndpoint(agent, enriched){
+  const headers = {'Content-Type':'application/json'};
+  // Prefer this agent's key; fall back to any OpenRouter key already saved
+  let key = secrets[agent.id];
+  if(!key && agent.url && agent.url.includes('openrouter.ai')){
+    for(const k of Object.keys(secrets)){
+      if(secrets[k] && agents.find(a=>a.id===k && a.url && a.url.includes('openrouter.ai'))){
+        key = secrets[k]; break;
+      }
+    }
+  }
+  let body, response;
+
+  if(agent.format==='ollama'){
+    body = {model:agent.model, messages:[{role:'user',content:enriched}], stream:false};
+    if(key) headers.Authorization = 'Bearer '+key;
+    response = await fetch(agent.url,{method:'POST',headers,body:JSON.stringify(body)});
+  } else if(agent.format==='anthropic'){
+    if(key) headers['x-api-key'] = key;
+    headers['anthropic-version'] = '2023-06-01';
+    body = {model:agent.model, max_tokens:4096, messages:[{role:'user',content:enriched}]};
+    response = await fetch(agent.url,{method:'POST',headers,body:JSON.stringify(body)});
+  } else {
+    body = {model:agent.model, messages:[{role:'user',content:enriched}], stream:false, temperature:0.4};
+    if(key) headers.Authorization = 'Bearer '+key;
+    // OpenRouter recommended headers
+    if(agent.url && agent.url.includes('openrouter.ai')){
+      headers['HTTP-Referer'] = location.origin || 'https://agent-world.local';
+      headers['X-Title'] = 'Agent World';
+    }
+    response = await fetch(agent.url,{method:'POST',headers,body:JSON.stringify(body)});
+  }
+
+  let data;
+  try { data = await response.json(); }
+  catch(e){ throw new Error('Invalid JSON from endpoint (HTTP '+response.status+')'); }
+
+  if(!response.ok){
+    const msg = data.error?.message || data.message || data.error || ('HTTP '+response.status);
+    if(response.status === 401 || /auth|api key|unauthorized/i.test(String(msg))){
+      throw new Error('Missing or invalid API key for '+agent.name+'. Tap ⚙ on the agent and paste your OpenRouter key.');
+    }
+    if(response.status === 429){
+      throw new Error('Rate limited on '+agent.name+'. Free models have daily limits — try another agent or wait.');
+    }
+    throw new Error(String(msg));
+  }
+
+  if(agent.format==='ollama') return data.message?.content || JSON.stringify(data,null,2);
+  if(agent.format==='anthropic') return (data.content||[]).map(c=>c.text||'').join('\n') || JSON.stringify(data,null,2);
+  return data.choices?.[0]?.message?.content || data.output_text ||
+    (Array.isArray(data.content)?data.content.map(x=>x.text).join('\n'):null) ||
+    JSON.stringify(data,null,2);
+}
+
+function renderCompareCards(results, container){
+  const grid = document.createElement('div');
+  grid.className = 'compare-grid';
+  results.forEach((r, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'compare-card' + (r.error?' error':'') + (r.loading?' loading':'');
+    const canSave = !r.loading && !r.error && r.answer;
+    card.innerHTML = `<div class="card-head"><span class="av">${esc(r.icon||'🧠')}</span><strong>${esc(r.name)}</strong></div>
+      <div class="card-body">${esc(r.loading?'Working on the problem…':(r.error||r.answer||''))}</div>
+      ${canSave ? `<div class="card-actions"><button type="button" class="save-finding-btn" data-idx="${idx}">Save finding from ${esc(r.name)}</button></div>` : ''}`;
+    grid.appendChild(card);
+  });
+  container.appendChild(grid);
+
+  // Wire save-finding buttons
+  grid.querySelectorAll('.save-finding-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const r = results[Number(btn.dataset.idx)];
+      if(!r || !r.answer) return;
+      // Pre-fill the evidence box with a short attribution + first part of the answer
+      const snippet = r.answer.length > 400 ? r.answer.slice(0,400).trim() + '…' : r.answer.trim();
+      $('evidenceNote').value = `[${r.name}] ${snippet}`;
+      $('evidenceType').value = 'claim';
+      $('evidenceNote').focus();
+      // Scroll the findings panel into view on mobile
+      $('evidenceNote').scrollIntoView({behavior:'smooth', block:'center'});
+      toast('Finding prepared — edit if needed, then hit Save finding');
+    };
+  });
+  return grid;
+}
+
+function buildSynthBar(results){
+  const endpoints = agents.filter(a=>a.kind==='endpoint');
+  if(!endpoints.length) return '';
+  const opts = endpoints.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');
+  const bar = document.createElement('div');
+  bar.className = 'synth-bar';
+  bar.innerHTML = `
+    <span class="tiny muted">Synthesize answers with:</span>
+    <select id="synthTarget">${opts}</select>
+    <button type="button" class="primary" id="doSynthBtn">Synthesize & resolve ↗</button>
+    <span class="tiny muted">Merges agreement, disagreement, best answer, open risks</span>`;
+  return bar;
+}
+
+async function runSynthesis(results, originalPrompt){
+  const targetId = $('synthTarget')?.value;
+  const target = agents.find(a=>a.id===targetId);
+  if(!target){ toast('No synthesizer endpoint selected'); return; }
+
+  const parts = results.filter(r=>!r.error&&r.answer).map(r=>`### ${r.name}\n${r.answer}`).join('\n\n');
+  if(!parts){ toast('No successful answers to synthesize'); return; }
+
+  const synthPrompt =
+`You are the lead synthesizer for a multi-agent team. Your job is to make the FINAL answer better than any single agent produced.
+
+Original problem the team was given:
+${originalPrompt}
+
+Independent answers from the team:
+${parts}
+
+Produce one improved, practical resolution that the whole team can stand behind:
+1. Best overall answer or recommended approach (clear and actionable).
+2. What the agents agreed on (high confidence).
+3. Where they disagreed — pick the stronger position and say why, or present both carefully.
+4. Concrete improvements (better reasoning, clearer code, fewer assumptions).
+5. Remaining risks, uncertainties, and the single most useful next check.
+Prefer precision over hype. If this is code, return improved code plus a short explanation of what changed and why.`;
+
+  addMsg('system', 'Running synthesis on '+target.name+'…', 'Orchestrator');
+  const sendBtn = $('sendBtn');
+  sendBtn.disabled = true;
+  try{
+    const answer = await callEndpoint(target, synthPrompt);
+    addMsg('synth', answer, 'Synthesis · '+target.name);
+    // addMsg already saves; keep explicit sources metadata
+    const last = sessionMessages[sessionMessages.length-1];
+    if(last) last.sources = results.map(r=>r.name);
+  } catch(err){
+    addMsg('assistant', 'Synthesis failed: '+err.message, 'Connection error');
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+/* Mode toggle */
+$('modeSingle').onclick = ()=>{
+  multiMode = false;
+  $('modeSingle').classList.add('active');
+  $('modeMulti').classList.remove('active');
+  updateModeUI();
+  renderAgents();
+  saveState();
+};
+$('modeMulti').onclick = ()=>{
+  multiMode = true;
+  $('modeMulti').classList.add('active');
+  $('modeSingle').classList.remove('active');
+  const eps = agents.filter(a=>a.kind==='endpoint');
+  if(multiSelected.size===0 && eps.length) eps.forEach(a=>multiSelected.add(a.id));
+  updateModeUI();
+  renderAgents();
+  saveState();
+};
+
+/* Config — each agent has its own independent settings */
+function openConfig(){
+  const a = current();
+  if(a.kind==='endpoint'){
+    $('cfgName').value = a.name || '';
+    $('cfgUrl').value = a.url || OR_URL;
+    $('cfgModel').value = a.model || '';
+    $('cfgFormat').value = a.format || 'openai';
+    // Show whether a key is already stored for this agent (don't re-display the secret)
+    $('cfgKey').value = '';
+    $('cfgKey').placeholder = secrets[a.id] ? '••••••••  (key already saved for this agent)' : 'Optional for local Ollama / Required for OpenRouter';
+  } else {
+    $('cfgName').value = '';
+    $('cfgUrl').value = OR_URL;
+    $('cfgModel').value = 'openrouter/free';
+    $('cfgFormat').value = 'openai';
+    $('cfgKey').value = '';
+    $('cfgKey').placeholder = 'Optional for local Ollama / Required for OpenRouter';
+  }
+  $('configOverlay').classList.add('show');
+}
+function closeConfig(){ $('configOverlay').classList.remove('show'); }
+
+$('addAgentBtn').onclick = ()=>{
+  active='__new';
+  openConfig();
+  $('cfgName').value='';
+  $('cfgUrl').value=OR_URL;
+  $('cfgModel').value='openrouter/free';
+  $('cfgKey').placeholder = 'Optional for local Ollama / Required for OpenRouter';
+};
+$('configureBtn').onclick = openConfig;
+$('closeConfig').onclick = closeConfig;
+$('cancelConfig').onclick = closeConfig;
+$('configOverlay').addEventListener('click',e=>{ if(e.target===$('configOverlay')) closeConfig(); });
+
+$('configForm').onsubmit = e=>{
+  e.preventDefault();
+  const name=$('cfgName').value.trim(), url=$('cfgUrl').value.trim(), model=$('cfgModel').value.trim(), format=$('cfgFormat').value, key=$('cfgKey').value;
+  if(!/^https?:\/\//i.test(url)){ toast('Enter a valid HTTP(S) URL'); return; }
+  let id = (active!=='__new' && current().kind==='endpoint') ? active : 'custom-'+Date.now();
+  // Preserve existing icon / description when editing a known agent
+  const existing = agents.find(x=>x.id===id);
+  const icon = existing?.icon || (name[0]||'🧠').toUpperCase();
+  const desc = existing?.desc || ('Endpoint · '+model);
+  const a = {id, name, desc, icon, kind:'endpoint', url, model, format, tags:['endpoint']};
+  if(existing) agents = agents.map(x=>x.id===id?a:x); else agents.push(a);
+  // Only overwrite the key if the user actually typed a new one
+  if(key && key.trim()) secrets[id] = key.trim();
+  if(multiMode) multiSelected.add(id);
+  active = id;
+  renderAgents();
+  updateModeUI();
+  closeConfig();
+  saveState();
+  toast(name + ' settings saved');
+};
+
+$('agentSearch').oninput = renderAgents;
+document.querySelectorAll('[data-filter]').forEach(b=>{
+  b.onclick = ()=>{
+    filter = b.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));
+    renderAgents();
+  };
+});
+
+document.querySelectorAll('.wf-btn').forEach(b=>{
+  b.onclick = ()=>{
+    currentWorkflow = b.dataset.wf;
+    document.querySelectorAll('.wf-btn').forEach(x=>x.classList.toggle('active',x===b));
+    $('wfDesc').textContent = workflowDesc[currentWorkflow]||'';
+    saveState();
+  };
+});
+
+$('clearBtn').onclick = ()=>{
+  $('messages').innerHTML = '<div class="welcome"><div class="orb">🧠</div><strong>Conversation cleared</strong><p>Evidence log is unchanged. Saved data remains.</p></div>';
+  sessionMessages = [];
+  lastMultiResults = [];
+  toast('Conversation cleared');
+};
+
+/* Main submit */
+$('chatForm').onsubmit = async e=>{
+  e.preventDefault();
+  const prompt = $('prompt').value.trim();
+  if(!prompt) return;
+  $('prompt').value = '';
+  queries++;
+  $('queryCount').textContent = queries;
+  addMsg('user', prompt, 'You');
+
+  const enriched = buildEnrichedPrompt(prompt);
+  const sendBtn = $('sendBtn');
+  sendBtn.disabled = true;
+
+  if(multiMode){
+    const selected = [...multiSelected].map(id=>agents.find(a=>a.id===id)).filter(Boolean);
+    if(!selected.length){
+      addMsg('assistant', 'No endpoints selected. Select at least one endpoint with a green check.', 'Multi-agent');
+      sendBtn.disabled = false;
+      return;
+    }
+
+    addMsg('system', `${selected.length} agent(s) are working on your problem in parallel…`, 'Orchestrator');
+    const placeholderResults = selected.map(a=>({id:a.id, name:a.name, icon:a.icon, loading:true}));
+    const host = document.createElement('div');
+    host.className = 'msg system';
+    host.style.maxWidth = '100%';
+    host.innerHTML = '<span class="by">Multi-agent replies</span>';
+    $('messages').appendChild(host);
+    renderCompareCards(placeholderResults, host);
+    $('messages').scrollTop = $('messages').scrollHeight;
+
+    const settled = await Promise.all(selected.map(async a=>{
+      try{
+        const answer = await callEndpoint(a, enriched);
+        return {id:a.id, name:a.name, icon:a.icon, answer};
+      } catch(err){
+        return {id:a.id, name:a.name, icon:a.icon, error: err.message};
+      }
+    }));
+
+    lastMultiResults = settled;
+    host.innerHTML = '<span class="by">Multi-agent replies</span>';
+    renderCompareCards(settled, host);
+    const bar = buildSynthBar(settled);
+    if(bar){
+      host.appendChild(bar);
+      $('doSynthBtn').onclick = ()=> runSynthesis(settled, prompt);
+    }
+    sessionMessages.push({role:'multi', text:settled.map(r=>`[${r.name}] ${r.error?'ERROR: '+r.error:r.answer}`).join('\n\n---\n\n'), by:'Multi-agent', time:new Date().toISOString()});
+    saveState();
+    $('messages').scrollTop = $('messages').scrollHeight;
+    sendBtn.disabled = false;
+    toast(settled.filter(r=>!r.error).length + ' / ' + settled.length + ' agents finished — save useful findings on the right');
+    return;
+  }
+
+  // Single mode
+  const a = current();
+  if(a.kind!=='endpoint'){
+    addMsg('assistant', a.name+' is not a connected endpoint. Configure an API endpoint via ⚙ Connect.', 'Connection needed');
+    sendBtn.disabled = false;
+    return;
+  }
+
+  sendBtn.textContent = 'Working…';
+  const loading = document.createElement('div');
+  loading.className = 'msg assistant';
+  loading.innerHTML = '<span class="by">Endpoint</span><p>Waiting for response…</p>';
+  $('messages').appendChild(loading);
+
+  try{
+    const answer = await callEndpoint(a, enriched);
+    loading.remove();
+    addMsg('assistant', answer, a.name);
+  } catch(err){
+    loading.remove();
+    addMsg('assistant', 'Could not reach endpoint: '+err.message+'\n\nCheck your API key or CORS settings.', 'Connection error');
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send question ↗';
+  }
+};
+
+$('saveEvidenceBtn').onclick = ()=>{
+  const t = $('evidenceNote').value.trim();
+  if(!t){ toast('Write a finding first'); return; }
+  evidence.push({text:t, type:$('evidenceType').value, time:new Date().toISOString()});
+  $('evidenceNote').value = '';
+  renderEvidence();
+  saveState();
+  toast('Saved to evidence log (persisted)');
+};
+
+$('exportBtn').onclick = ()=>{
+  const payload = {
+    title:'Agent World multi-agent session',
+    exportedAt:new Date().toISOString(),
+    messages: sessionMessages,
+    evidence
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='agent-world-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+  toast('Exported session JSON');
+};
+
+/* Init */
+const hadSaved = loadState();
+renderAgents();
+renderRoleChips();
+renderDirectory();
+renderEvidence();
+updateModeUI();
+$('wfDesc').textContent = workflowDesc[currentWorkflow] || workflowDesc.direct;
+$('queryCount').textContent = queries;
+// Sync workflow buttons
+document.querySelectorAll('.wf-btn').forEach(b=>{
+  b.classList.toggle('active', b.dataset.wf === currentWorkflow);
+});
+// Restore conversation UI if we had saved messages
+if(sessionMessages.length){
+  restoreMessagesUI();
+  if(hadSaved) toast('Restored previous work from this device');
+}
+// Mode buttons
+if(multiMode){
+  $('modeMulti').classList.add('active');
+  $('modeSingle').classList.remove('active');
+} else {
+  $('modeSingle').classList.add('active');
+  $('modeMulti').classList.remove('active');
+}
+// Persist on page hide / close for safety
+window.addEventListener('pagehide', saveState);
+window.addEventListener('beforeunload', saveState);
+})();
+</script>
+</body>
+</html>
